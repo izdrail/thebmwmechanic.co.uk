@@ -1,0 +1,54 @@
+---
+import { Icon } from 'astro-icon/components'
+
+const features = [
+  {
+    name: 'BMW specialist',
+    description:
+      'With a diploma in mechanics from Bucharest University and an experience of more then 7 years working only with BMW cars I am a bmw specialist located in Wickford, Essex ',
+    icon: 'sparkles'
+  },
+  {
+    name: 'BMW garage',
+    description:
+      'Conveniently located in the historic town of Wickford, Essex, my garage offers comprehensive BMW services, including expert software updates.',
+    icon: 'puzzle-piece'
+  },
+  {
+    name: 'Bmw service',
+    description:
+      'Because you should always care for your car we offer a monthly subscription plan that will cover the basics bmw service recommendations package.',
+    icon: 'presentation-chart-bar'
+  },
+  {
+    name: 'Bmw repairs',
+    description:
+      'We attend any types of bmw repairs either to the client location when possible or at our garage in essex if needed',
+    icon: 'clock'
+  }
+]
+---
+
+<div class='bg-gray-100 py-12 dark:bg-gray-800'>
+  <div class='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+    <dl class='space-y-10 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10 md:space-y-0'>
+      {
+        features.map((feature) => (
+            <div class='relative'>
+              <dt>
+                <div class='absolute flex h-12 w-12 items-center justify-center rounded-md bg-purple-500 text-white dark:bg-purple-400 dark:text-black'>
+                  <Icon class='h-6 w-6' aria-hidden='true' name={'heroicons:' + feature.icon} />
+                </div>
+                <p class='ml-16 text-lg font-medium leading-6 text-gray-900 dark:text-gray-200'>
+                  {feature.name}
+                </p>
+              </dt>
+              <dd class='ml-16 mt-2 text-base text-gray-600 dark:text-gray-400'>
+                {feature.description}
+              </dd>
+            </div>
+        ))
+      }
+    </dl>
+  </div>
+</div>

@@ -1,0 +1,12 @@
+services:
+  thebmwmechanic.co.uk:
+    build: .
+    image: izdrail/thebmwmechanic.co.uk:latest
+    container_name: thebmwmechanic.co.uk
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+      - type: bind
+        source: .
+        target: /app/

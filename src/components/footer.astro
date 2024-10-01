@@ -1,0 +1,14 @@
+---
+import { getCollection } from 'astro:content'
+import { Icon } from 'astro-icon/components'
+import { Logo } from '../config'
+
+const social = await getCollection('social')
+---
+
+<div class='h-24 lg:h-16 container'></div>
+<footer class='text-gray-600 dark:text-gray-400'>
+  <p class="text-center">
+    Project created under MIT Licence by <a href="https://izdrail.com">Stefan </a>
+  </p>
+</footer>
