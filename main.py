@@ -3,19 +3,11 @@ import sqlite3
 import requests
 import logging
 from spire.pdf import PdfDocument, FileFormat, PdfTextExtractor, PdfTextExtractOptions
-from spire.pdf.common import *
-
-from spire.pdf import *
-
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from fastapi import FastAPI, HTTPException
 from pathlib import Path
 from typing import List, Optional
 from sqlmodel import Field, Session, SQLModel, create_engine, select
-
-
-from llama_cpp import Llama
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -23,8 +15,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 CONFIG = {
     'pdf_directory': 'public/manuals_pdfs',
     'html_directory': 'public/manuals_html',
-    'text_directory': 'public//manuals_text',
-    'markdown_directory': 'public/manuals_md',
+    'text_directory': 'public/manuals_text',
+    'markdown_directory': 'manuals_md',
     'db_name': 'sqlite:///manuals.db',
     'api_url': 'https://club.autodoc.co.uk/api/v4/instructions/all?order_key=popular&order_type=desc&q=&maker_id=16&type=1&limit=1000&offset=0',
     'max_workers': 5
@@ -235,7 +227,7 @@ class Pipeline:
                 try:
                     future.result()
                 except Exception as e:
-                    logging.error(f"Error in processing manuals: {e}")
+                    logging.error(f"Error in processing manual: {e}")
 
     def process_single_manual(self, item, session: Session):
         """Processes a single manual."""
@@ -243,7 +235,6 @@ class Pipeline:
             logging.info(f"Processing manual: {item['manual_title']}")
             pdf_path = self.download_pdf(item['manual_link'], item['manual_title'])
 
-            print(pdf_path)
             if pdf_path:
                 page_count = self.count_pdf_pages(pdf_path)
                 if page_count > 2:
@@ -279,24 +270,15 @@ class Pipeline:
 
     def count_pdf_pages(self, pdf_path: str) -> int:
         """Counts the pages of the PDF."""
-        print(pdf_path)
-        try:
-            pdf = PdfDocument()
-            pdf.LoadFromFile(pdf_path)
-            count = pdf.Pages.Count
-            return count
-        except Exception as e:
-            logging.error(f"Error loading PDF: {e}")
-            return 0
+        doc = PdfDocument.LoadFromFile(pdf_path)
+        return str(doc.Pages.Count)
+
 
     def modify_pdf(self, pdf_path: str):
         """Modifies the PDF file (e.g., remove first page)."""
-        #TODO: Fix this to remove the first and last page
-        #
-        pdf = PdfDocument()
-        pdf.LoadFromFile(pdf_path)
-        pdf.Pages.RemoveAt(0)  # Remove the first page
-        pdf.save(pdf_path, FileFormat.PDF)
+        doc = PdfDocument.LoadFromFile(pdf_path)
+        doc.remove_page(0)  # Remove the first page
+        doc.save(pdf_path, FileFormat.PDF)
         logging.info(f"Modified PDF: {pdf_path}")
 
     def extract_text_from_pdf(self, pdf_path: str) -> str:
@@ -327,7 +309,7 @@ def startup_event():
     create_table_if_not_exists()
 
 
-@app.post("/fetch-manuals/")
+@app.get("/fetch-manuals/")
 def fetch_manuals():
     """Fetch manuals from the external API and save to database."""
     pipeline = Pipeline()
@@ -353,25 +335,6 @@ def get_manuals():
     with Session(engine) as session:
         manuals = session.exec(select(Manual)).all()
         return manuals
-
-
-@app.get("/chat", response_model=List[Manual])
-def get_chat():
-    """Chats with lama cpp."""
-    llm = Llama.from_pretrained(
-        repo_id="Qwen/Qwen2-0.5B-Instruct-GGUF",
-        filename="*q8_0.gguf",
-        verbose=True
-    )
-    output = llm(
-        "Q: Name the planets in the solar system? A: ",  # Prompt
-        max_tokens=32,  # Generate up to 32 tokens, set to None to generate up to the end of the context window
-        stop=["Q:", "\n"],  # Stop generating just before the model would generate a new question
-        echo=True  # Echo the prompt back in the output
-    )  # Generate a completion, can also call create_completion
-    return {
-        "data": output
-    }
 
 
 if __name__ == "__main__":
