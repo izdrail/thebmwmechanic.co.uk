@@ -37,6 +37,8 @@ RUN su -c "pip3 install uvicorn"
 RUN su -c "pip3 install pymupdf4llm"
 RUN su -c "pip3 install pdfplumber"
 RUN su -c "pip3 install markdownify"
+RUN su -c "pip install llama-cpp-python"
+RUN su -c "pip3 install huggingface-hub"
 
 # Set the working directory inside the container
 WORKDIR /app
